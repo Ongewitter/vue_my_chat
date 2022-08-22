@@ -23,7 +23,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue';
 import MessageBox from './components/MessageBox.vue';
 import InputBox from './components/InputBox.vue';
@@ -40,12 +40,12 @@ export default Vue.extend({
     this.getChat();
   },
   methods: {
-    onRegister(event, name) {
+    onRegister(event: Event, name: string) {
       event.preventDefault();
     // Authentication is out of scope for this project so just generate an id
     this.user = { name, id: this.getId() };
     },
-    getChat() {
+    getChat(): string[] {
       // TODO: Get from API
       // listenChat((chat) => {
       //   this.messages = chat.reverse().map(m => ({
@@ -53,8 +53,9 @@ export default Vue.extend({
       //     isMine: m.uid && m.uid === this.user?.id
       //   }));
       // });
+      return ["Fun", "plezier"];
     },
-    onSubmit(event) {
+    onSubmit(event: Event): void {
       event.preventDefault();
 
       // TODO: Call to API
@@ -66,7 +67,7 @@ export default Vue.extend({
       //   }
       // );
     },
-    getId() {
+    getId(): Number {
       return new Date().getTime();
     }
   },

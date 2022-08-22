@@ -10,12 +10,12 @@
   </form>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'InputBox',
   data: () => ( { text: '' } ),
   methods: {
-    onSubmit(event) {
+    onSubmit(event: Event): void {
       this.$emit("submit", event, this.text);
       this.text = '';
     }
