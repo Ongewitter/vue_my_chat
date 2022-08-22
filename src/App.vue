@@ -24,13 +24,13 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import MessageBox from './components/MessageBox.vue';
 import InputBox from './components/InputBox.vue';
 import LoginDialog from './components/LoginDialog.vue';
 
-export default {
+export default Vue.extend({
   name: 'App',
-  // Register the components
   components: {
     LoginDialog,
     InputBox,
@@ -76,7 +76,7 @@ export default {
       messages: []
     }
   )
-}
+});
 </script>
 
 <style>
