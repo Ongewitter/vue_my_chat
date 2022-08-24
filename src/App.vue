@@ -25,9 +25,12 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { Message } from './models/Message';
+import { User } from './models/User';
 import MessageBox from './components/MessageBox.vue';
 import InputBox from './components/InputBox.vue';
 import LoginDialog from './components/LoginDialog.vue';
+import { ApiService } from './lib/services/ApiService';
 
 export default Vue.extend({
   name: 'App',
@@ -42,54 +45,38 @@ export default Vue.extend({
   methods: {
     onRegister(event: Event, name: string) {
       event.preventDefault();
-    // Authentication is out of scope for this project so just generate an id
-    this.user = { name, id: this.getId() };
+
+      const user: User = this.apiService.createUser(name);
+      if (user) { this.user = user; }
     },
-    getChat(): string[] {
-      // TODO: Get from API
-      // listenChat((chat) => {
-      //   this.messages = chat.reverse().map(m => ({
-      //     ...m,
-      //     isMine: m.uid && m.uid === this.user?.id
-      //   }));
-      // });
-      return ["Fun", "plezier"];
+
+    getChat(): void {
+      const messages: Message[] = this.apiService.getMessages();
+
+      this.messages = messages.reverse()
+                              .map((message: Message) => ({
+                                ...message,
+                                isMine: message.author && message.author === this.user
+                              }));
     },
-    onSubmit(event: Event): void {
+
+    onSubmit(event: Event, text: string): void {
       event.preventDefault();
 
-      // TODO: Call to API
-      // sendMessage(
-      //   {
-      //     text,
-      //     uid: this.user?.id,
-      //     author: this.user?.name
-      //   }
-      // );
+      const message: Message = this.apiService.createMessage(text, this.user);
+      this.messages.push(message);
+      // TODO: Remove message on error
     },
-    getId(): Number {
-      return new Date().getTime();
-    }
   },
   data: () => (
     {
-      user: undefined,
-      messages: []
+      user: null as unknown as User,
+      messages: [] as Message[],
+      apiService: new ApiService
     }
   )
 });
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
 
 <style>
 * {
