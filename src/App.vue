@@ -39,40 +39,54 @@ export default Vue.extend({
     InputBox,
     MessageBox
   },
-  created() {
-    this.getChat();
-  },
+
+  created() {},
   methods: {
-    onRegister(event: Event, name: string) {
+    async onRegister(event: Event, name: string) {
       event.preventDefault();
 
-      const user: User = this.apiService.createUser(name);
-      if (user) { this.user = user; }
+      try {
+        const user: User = await this.apiService.createUser(name);
+
+        this.user = user;
+        this.getChat()
+      } catch (error: any) {
+         this.errors = error.messages;
+      }
     },
-
-    getChat(): void {
-      const messages: Message[] = this.apiService.getMessages();
-
-      this.messages = messages.reverse()
+    async getChat() {
+      try {
+        const messages: Message[] = await this.apiService.getMessages();
+        this.messages = messages.reverse()
                               .map((message: Message) => ({
                                 ...message,
-                                isMine: message.author && message.author === this.user
-                              }));
+                                isMine: message.author && message.author.id === this.user.id
+                              } as Message));
+      } catch (error: any) {
+         this.errors = error.messages;
+      }
     },
-
-    onSubmit(event: Event, text: string): void {
+    async onSubmit(event: Event, text: string) {
       event.preventDefault();
+      if (text.length > 255) { return; }
 
-      const message: Message = this.apiService.createMessage(text, this.user);
-      this.messages.push(message);
-      // TODO: Remove message on error
+      try {
+        const message = await this.apiService.createMessage(text, this.user);
+        this.messages.push({
+          ...message,
+          isMine: message.author && message.author.id === this.user.id,
+        } as Message);
+      } catch (error: any) {
+         this.errors = error.messages;
+      }
     },
   },
   data: () => (
     {
       user: null as unknown as User,
       messages: [] as Message[],
-      apiService: new ApiService
+      apiService: new ApiService,
+      errors: [] as string[],
     }
   )
 });

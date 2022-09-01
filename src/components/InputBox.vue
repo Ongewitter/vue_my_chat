@@ -5,6 +5,7 @@
         v-model='text'
         placeholder='Write a message'
         type='text'
+        maxlength='255'
     />
     <button :disabled='text === ""'>Send</button>
   </form>

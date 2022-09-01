@@ -1,7 +1,7 @@
 <template>
   <div class="message-box"
        :class="{ dark: isDark }" >
-    <h5>{{ author }}</h5>
+    <h5>{{ author.name }}</h5>
     {{ text }}
   </div>
 </template>
