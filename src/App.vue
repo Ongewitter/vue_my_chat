@@ -20,6 +20,12 @@
         v-if='!user'
         @submit='onRegister'
     />
+
+    <ErrorDialog
+        v-if='error'
+        :error='error'
+        @submit='clearErrors'
+    />
   </div>
 </template>
 
@@ -30,63 +36,70 @@ import { User } from './models/User';
 import MessageBox from './components/MessageBox.vue';
 import InputBox from './components/InputBox.vue';
 import LoginDialog from './components/LoginDialog.vue';
+import ErrorDialog from './components/ErrorDialog.vue';
 import { ApiService } from './lib/services/ApiService';
 
 export default Vue.extend({
   name: 'App',
   components: {
     LoginDialog,
+    ErrorDialog,
     InputBox,
     MessageBox
   },
 
   created() {},
   methods: {
-    async onRegister(event: Event, name: string) {
+    onRegister(event: Event, name: string) {
       event.preventDefault();
-
-      try {
-        const user: User = await this.apiService.createUser(name);
-
-        this.user = user;
-        this.getChat()
-      } catch (error: any) {
-         this.errors = error.messages;
-      }
+      this.apiService.createUser(name)
+          .then((user) => {
+            this.user = user;
+            this.getChat()
+          })
+          .catch((error) => {
+            this.error = error.message;
+            this.user = null as unknown as User;
+          });
     },
-    async getChat() {
-      try {
-        const messages: Message[] = await this.apiService.getMessages();
-        this.messages = messages.reverse()
-                              .map((message: Message) => ({
-                                ...message,
-                                isMine: message.author && message.author.id === this.user.id
-                              } as Message));
-      } catch (error: any) {
-         this.errors = error.messages;
-      }
+    getChat() {
+      this.apiService.getMessages()
+          .then((messages) => {
+            this.messages = messages.reverse()
+                                  .map((message: Message) => ({
+                                    ...message,
+                                    isMine: message.author && message.author.id === this.user.id
+                                  } as Message));
+          })
+          .catch((error) => {
+            this.error = error.message;
+          });
     },
-    async onSubmit(event: Event, text: string) {
+    onSubmit(event: Event, text: string) {
       event.preventDefault();
       if (text.length > 255) { return; }
 
-      try {
-        const message = await this.apiService.createMessage(text, this.user);
-        this.messages.push({
-          ...message,
-          isMine: message.author && message.author.id === this.user.id,
-        } as Message);
-      } catch (error: any) {
-         this.errors = error.messages;
-      }
+      this.apiService.createMessage(text, this.user)
+        .then((message) => {
+          this.messages.push({
+            ...message,
+            isMine: message.author && message.author.id === this.user.id,
+          } as Message);
+        })
+      .catch((error) => {
+         this.error = error.message;
+      })
     },
+    clearErrors(){
+      this.error = '';
+    }
   },
   data: () => (
     {
       user: null as unknown as User,
       messages: [] as Message[],
       apiService: new ApiService,
-      errors: [] as string[],
+      error: '',
     }
   )
 });
