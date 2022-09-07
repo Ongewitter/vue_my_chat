@@ -31,6 +31,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import VueSession from 'vue-session';
 import { Message } from './models/Message';
 import { User } from './models/User';
 import MessageBox from './components/MessageBox.vue';
@@ -38,6 +39,7 @@ import InputBox from './components/InputBox.vue';
 import LoginDialog from './components/LoginDialog.vue';
 import ErrorDialog from './components/ErrorDialog.vue';
 import { ApiService } from './lib/services/ApiService';
+Vue.use(VueSession)
 
 export default Vue.extend({
   name: 'App',
@@ -48,19 +50,30 @@ export default Vue.extend({
     MessageBox
   },
 
-  created() {},
+  created() {
+    if (this.$session.exists() && this.$session.has("user")) {
+      this.user = this.$session.get("user");
+      this.getChat();
+    }
+  },
   methods: {
     onRegister(event: Event, name: string) {
       event.preventDefault();
       this.apiService.createUser(name)
           .then((user) => {
             this.user = user;
+            this.$session.set("user", user);
             this.getChat()
           })
           .catch((error) => {
             this.error = error.message;
             this.user = null as unknown as User;
           });
+    },
+    logOut() {
+      // TODO: Log user out
+      this.user = null as unknown as User;
+      this.messages = [];
     },
     getChat() {
       this.apiService.getMessages()
