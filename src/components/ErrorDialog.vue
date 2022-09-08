@@ -3,9 +3,7 @@
     <div class='dialog'>
       {{ error }}
 
-      <form @submit='$emit("submit")'>
-        <button>Ok</button>
-      </form>
+      <button @click="$emit('clear-error')">Ok</button>
     </div>
   </div>
 </template>

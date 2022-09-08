@@ -2,29 +2,33 @@
   <div class='app'>
     <div class='messages'>
       <MessageBox
-          v-for='message in messages'
-          :key='message.id'
-          :class='["message", { right: message.isMine }]'
-          :dark='message.isMine'
-          :text='message.text'
-          :author='message.author'
+        v-for='message in messages'
+        :key='message.id'
+        :class='["message", { right: message.isMine }]'
+        :dark='message.isMine'
+        :text='message.text'
+        :author='message.author'
       />
     </div>
 
     <InputBox
-        class='ChatBox'
-        @submit='onSubmit'
+      class='ChatBox'
+      @submit='onSubmit'
+    />
+    <LogoutButton
+      v-if='user'
+      @logout="logout()"
     />
 
     <LoginDialog
-        v-if='!user'
-        @submit='onRegister'
+      v-if='!user'
+      @submit='onRegister'
     />
 
     <ErrorDialog
-        v-if='error'
-        :error='error'
-        @submit='clearErrors'
+      v-if='error'
+      :error='error'
+      @clear-error='clearError'
     />
   </div>
 </template>
@@ -38,6 +42,7 @@ import MessageBox from './components/MessageBox.vue';
 import InputBox from './components/InputBox.vue';
 import LoginDialog from './components/LoginDialog.vue';
 import ErrorDialog from './components/ErrorDialog.vue';
+import LogoutButton from './components/LogoutButton.vue';
 import { ApiService } from './lib/services/ApiService';
 Vue.use(VueSession)
 
@@ -47,6 +52,7 @@ export default Vue.extend({
     LoginDialog,
     ErrorDialog,
     InputBox,
+    LogoutButton,
     MessageBox
   },
 
@@ -62,7 +68,7 @@ export default Vue.extend({
       this.apiService.createUser(name)
           .then((user) => {
             this.user = user;
-            this.$session.set("user", user);
+            this.$session.set("user", this.user);
             this.getChat()
           })
           .catch((error) => {
@@ -70,9 +76,9 @@ export default Vue.extend({
             this.user = null as unknown as User;
           });
     },
-    logOut() {
-      // TODO: Log user out
+    logout() {
       this.user = null as unknown as User;
+      this.$session.set("user", this.user);
       this.messages = [];
     },
     getChat() {
@@ -103,7 +109,7 @@ export default Vue.extend({
          this.error = error.message;
       })
     },
-    clearErrors(){
+    clearError(){
       this.error = '';
     }
   },
